@@ -1,16 +1,18 @@
 import React from "react";
 import Card from "../card/Card";
+import { useSelector } from "react-redux";
 
-const Cards = ({ countries }) => {
-  console.log("Countries en el componente Cards", countries);
+const Cards = () => {
+  const { allCountries } = useSelector((state) => state); // Cambia aquí
+
+  console.log("Countries en el componente Cards", allCountries);
 
   return (
     <div className="cards">
-      {countries && countries.countries
-        ? countries.countries.map((country) => (
-            <Card key={country.id} country={country} />
-          ))
-        : null}
+      {allCountries &&
+        allCountries.map((country) => (
+          <Card key={country.cca3} country={country} />
+        ))}
     </div>
   );
 };

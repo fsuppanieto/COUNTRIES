@@ -1,30 +1,32 @@
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { searchByName, updateSearchTerm } from "../../redux/actions";
-
-const SearchBar = () => {
+import { useState } from "react";
+import { search } from "../../redux/actions";
+import { useDispatch } from "react-redux";
+const Searchbar = () => {
+  const [data, setData] = useState("");
   const dispatch = useDispatch();
-  const searchTerm = useSelector((state) => state.searchTerm);
-
-  const handleInputChange = (e) => {
-    dispatch(updateSearchTerm(e.target.value));
+  const handleSearch = (event) => {
+    setData(event.target.value);
   };
-
-  const handleSearch = () => {
-    dispatch(searchByName(searchTerm));
+  const searchName = (data) => {
+    dispatch(search(data));
+    setData("");
   };
-
   return (
-    <div className="search-bar">
-      <input
-        type="text"
-        placeholder="Search by country name..."
-        value={searchTerm}
-        onChange={handleInputChange}
-      />
-      <button onClick={handleSearch}>Search</button>
+    <div>
+      <div>
+        <input
+          type="text"
+          placeholder="Buscar por nombre"
+          name="search"
+          value={data}
+          onChange={handleSearch}
+        />
+        <button typeof="button" onClick={() => searchName(data)}>
+          Buscar
+        </button>
+      </div>
     </div>
   );
 };
 
-export default SearchBar;
+export default Searchbar;

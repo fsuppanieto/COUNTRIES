@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Cards from "../../components/cards/Cards";
-import Pagination from "../../components/pagination/Pagination";
+
 import SearchBar from "../../components/searchBar/SearchBar";
 
 import {
@@ -12,16 +12,14 @@ import {
   orderCountries,
   orderByRegion,
   orderByActivity,
-  searchByName,
 } from "../../redux/actions";
+import Pagination from "../../components/pagination/Pagination";
 
 const HomePage = () => {
   const dispatch = useDispatch();
 
-  const countries = useSelector((state) => state.renderedCountries);
+  const countries = useSelector((state) => state.allCountriesBackup);
   const loadingHome = useSelector((state) => state.loadingHome);
-  const currentPage = useSelector((state) => state.currentPage);
-  const countriesPerPage = 10;
 
   // ... Otras variables de estado para filtros y ordenamiento
 
@@ -32,6 +30,7 @@ const HomePage = () => {
   const handlePageChange = (newPage) => {
     dispatch(setPage(newPage));
   };
+
   const navigate = useNavigate();
 
   return (
@@ -50,12 +49,7 @@ const HomePage = () => {
           {/* Lista de países */}
           <Cards countries={countries} />
           {/* Paginación */}
-          <Pagination
-            countriesPerPage={countriesPerPage}
-            totalCountries={countries.length}
-            currentPage={currentPage}
-            setCurrentPage={handlePageChange}
-          />
+          <Pagination />
         </div>
       )}
     </div>

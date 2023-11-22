@@ -1,31 +1,44 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setPage } from "../../redux/actions";
 
-const Pagination = ({
-  countriesPerPage,
-  totalCountries,
-  currentPage,
-  setCurrentPage,
-}) => {
-  const pageNumbers = [];
+const Pagination = () => {
+  const dispatch = useDispatch();
+  const position = useSelector((state) => state.indexPage);
+  const pages = useSelector((state) => state.totalPages);
 
-  for (let i = 1; i <= Math.ceil(totalCountries / countriesPerPage); i++) {
-    pageNumbers.push(i);
-  }
+  let currentPage = position;
+
+  const updateIndex = (event) => {
+    if (event.target.value === "<" && currentPage > 0) {
+      currentPage = currentPage - 1;
+      console.log("Current Page:", currentPage); // Agrega esto para depurar
+      dispatch(setPage(currentPage));
+    } else if (event.target.value === ">" && currentPage < pages - 1) {
+      currentPage = currentPage + 1;
+      console.log("Current Page:", currentPage); // Agrega esto para depurar
+      dispatch(setPage(currentPage));
+    }
+  };
+
+  console.log("Total Pages:", pages); // Agrega esto para depurar
 
   return (
-    <ul className="pagination">
-      {pageNumbers.map((number) => (
-        <li key={number}>
-          <a
-            href="#"
-            onClick={() => setCurrentPage(number)}
-            className={number === currentPage ? "active" : ""}
-          >
-            {number}
-          </a>
-        </li>
-      ))}
-    </ul>
+    <div className="paginate">
+      <button value={"<"} onClick={updateIndex} disabled={currentPage === 0}>
+        {"<"}
+      </button>
+      <div className="index">
+        <p>{currentPage + 1}</p>
+      </div>
+      <button
+        value={">"}
+        onClick={updateIndex}
+        disabled={currentPage === pages - 1}
+      >
+        {">"}
+      </button>
+    </div>
   );
 };
 

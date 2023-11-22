@@ -1,180 +1,165 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { connect } from "react-redux";
-import { getActivities } from "../../redux/actions";
+import { useSelector, useDispatch } from "react-redux";
+import validations from "./validations";
+import { postActivities } from "../../redux/actions";
 
-const FormPage = ({ countries, getActivities }) => {
-  const [formData, setFormData] = useState({
-    nombre: "",
-    dificultad: "",
-    duracion: "",
-    temporada: "",
-    paises: [],
+const FormPage = () => {
+  const countries = useSelector((state) => state.allCountriesBackup);
+  const message = useSelector((state) => state.message);
+  const dispatch = useDispatch();
+  const [data, setData] = useState({
+    name: "",
+    season: "",
+    duration: null,
+    dificulty: null,
+    idCountries: [],
   });
 
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setData({
+      ...data,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    dispatch(postActivities(data));
+    setData({
+      name: "",
+      season: "",
+      duration: "",
+      dificulty: "",
+      idCountries: [],
+    });
+  };
+
+  const handleChangeCountries = (event) => {
+    const { options } = event.target;
+    const selectedCountries = Array.from(options)
+      .filter((option) => option.selected)
+      .map((option) => option.value);
+
+    setData({
+      ...data,
+      idCountries: selectedCountries,
+    });
+  };
 
   useEffect(() => {
-    // Agrega un console.log para verificar las countries después de la llamada a la acción
-    if (!countries || !countries.countries) {
-      getActivities();
-    }
-    console.log("Countries después de getActivities:", countries);
-  }, [getActivities, countries]);
-
-  const handleChange = (e) => {
-    const { name, value, options } = e.target;
-
-    if (name === "paises") {
-      const selectedCountries = Array.from(options)
-        .filter((option) => option.selected)
-        .map((option) => option.value);
-
-      setFormData({
-        ...formData,
-        [name]: selectedCountries,
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
-  };
-
-  const validateForm = () => {
-    if (
-      !formData.nombre ||
-      !formData.dificultad ||
-      !formData.duracion ||
-      !formData.temporada ||
-      formData.paises.length === 0
-    ) {
-      setErrorMessage("Todos los campos son obligatorios");
-      return false;
-    }
-
-    if (
-      isNaN(formData.dificultad) ||
-      formData.dificultad < 1 ||
-      formData.dificultad > 5
-    ) {
-      setErrorMessage("La dificultad debe ser un número entre 1 y 5");
-      return false;
-    }
-    const nombreRegex = /^[a-zA-Z]+$/;
-    if (!nombreRegex.test(formData.nombre)) {
-      setErrorMessage("El nombre solo debe contener letras");
-      return false;
-    }
-
-    if (isNaN(formData.duracion) || formData.duracion < 0) {
-      setErrorMessage("La duración debe ser un número mayor o igual a 0");
-      return false;
-    }
-
-    if (!formData.temporada) {
-      setErrorMessage("Debes seleccionar una temporada");
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (validateForm()) {
-      console.log("Formulario enviado:", formData);
-      setErrorMessage("");
-    }
-  };
+    const validationErrors = validations(data);
+    setErrors(validationErrors);
+  }, [data]);
 
   return (
-    <div>
-      <h1>FORM PAGE</h1>
-      {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-      <form onSubmit={handleSubmit}>
-        <label>
-          Nombre:
-          <input
-            type="text"
-            name="nombre"
-            value={formData.nombre}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Dificultad (1-5):
-          <input
-            type="number"
-            name="dificultad"
-            value={formData.dificultad}
-            onChange={handleChange}
-            min="1"
-            max="5"
-          />
-        </label>
-        <label>
-          Duración (en horas):
+    <>
+      <h2>Crear actividad</h2>
+      <main>
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="name">Actividad</label>
+          <input name="name" value={data.name} onChange={handleChange} />
+          {errors.longName ? (
+            <label htmlFor="name">{errors.longName}</label>
+          ) : errors.emptyName ? (
+            <label htmlFor="name">{errors.emptyName}</label>
+          ) : errors.invalidName ? (
+            <label htmlFor="name">{errors.invalidName}</label>
+          ) : (
+            " "
+          )}
+          <label htmlFor="duration">Duracion (hs)</label>
           <input
             type="number"
-            name="duracion"
-            value={formData.duracion}
+            name="duration"
+            value={data.duration}
             onChange={handleChange}
-            min="0" // Puedes ajustar el valor mínimo según tus requisitos
           />
-        </label>
-        <label>
-          Temporada:
+          {errors.emptyDuration ? (
+            <label htmlFor="duration">{errors.emptyDuration}</label>
+          ) : (
+            " "
+          )}
+          <label htmlFor="dificulty">Dificultad</label>
           <select
-            name="temporada"
-            value={formData.temporada}
+            name="dificulty"
+            value={data.dificulty}
             onChange={handleChange}
           >
-            <option value="">Selecciona una temporada</option>
-            <option value="verano">Verano</option>
-            <option value="otonio">Otoño</option>
-            <option value="invierno">Invierno</option>
-            <option value="primavera">Primavera</option>
+            <option disabled selected>
+              Seleccionar
+            </option>
+            <option value={1}>Facil</option>
+            <option value={2}>Moderado</option>
+            <option value={3}>Intermedio</option>
+            <option value={4}>Avanzado</option>
+            <option value={5}>Extremo</option>
           </select>
-        </label>
-        <br />
-
-        {/* Resto de tus campos de formulario */}
-
-        <label>
-          Paises:
+          {errors.emptyDificulty ? (
+            <label htmlFor="dificulty">{errors.emptyDificulty}</label>
+          ) : (
+            " "
+          )}
+          <label htmlFor="season">Temporada</label>
+          <select name="season" value={data.season} onChange={handleChange}>
+            <option disabled value="">
+              Seleccionar
+            </option>
+            <option value="Verano">Verano</option>
+            <option value="Otoño">Otoño</option>
+            <option value="Invierno">Invierno</option>
+            <option value="Primavera">Primavera</option>
+          </select>
+          {errors.emptySeason ? (
+            <label htmlFor="season">{errors.emptySeason}</label>
+          ) : (
+            " "
+          )}
+          <label htmlFor="idCountries">Paises</label>
           <select
-            name="paises"
+            name="idCountries"
             multiple
-            value={formData.paises}
-            onChange={handleChange}
+            value={data.idCountries}
+            onChange={handleChangeCountries}
           >
-            {countries && countries.countries
-              ? countries.countries.map((country) => (
-                  <option key={country.id} value={country.name}>
-                    {country.name}
+            {countries &&
+              countries.map(({ id, name, flag }, index) => {
+                return (
+                  <option key={index} value={id}>
+                    {name}
                   </option>
-                ))
-              : null}
+                );
+              })}
           </select>
-        </label>
-        <br />
-
-        <button type="submit">Crear Actividad Turística</button>
-      </form>
+          {errors.emptyCountry ? (
+            <label htmlFor="idCountries">{errors.emptyCountry}</label>
+          ) : (
+            " "
+          )}
+          <button
+            type="submit"
+            disabled={Object.keys(errors).length !== 0}
+            id={Object.keys(errors).length !== 0 ? "disabled" : ""}
+          >
+            Crear
+          </button>
+        </form>
+        {message === "Actividad creada con exito" ? (
+          <h3>Actividad creada con exito</h3>
+        ) : message === "La actividad ya existe" ? (
+          <h3>La actividad ya existe</h3>
+        ) : (
+          ""
+        )}
+      </main>
       <Link to="/home">
         <button>Volver</button>
       </Link>
-    </div>
+    </>
   );
 };
-
-const mapStateToProps = (state) => {
-  return {
-    countries: state.countries,
-  };
-};
-
-export default connect(mapStateToProps, { getActivities })(FormPage);
+export default FormPage;

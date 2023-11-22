@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const Card = ({ country }) => {
+  // console.log("props en el componente card:", country);
   return (
     <div className="card">
       <Link to={`/country/${country.id}`}>

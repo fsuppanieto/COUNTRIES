@@ -39,23 +39,19 @@ export const showDetails = (idPais) => {
     }
   };
 };
-
-export const searchByName = (name) => {
+export const search = (name) => {
+  console.log(name);
   return async (dispatch) => {
     try {
-      const response = await axios.get(
-        `http://localhost:3001/countries/name/${name}`
-      );
-      const countries = response.data;
-      console.log("Data recibida desde API en searchByName", countries);
-
+      const response = (
+        await axios(`http://localhost:3001/countries?name=${name}`)
+      ).data;
       dispatch({
-        type: "SEARCH_BY_NAME",
-        payload: countries,
+        type: "SEARCH",
+        payload: response,
       });
     } catch (error) {
-      console.error("Error fetching searchByName", error);
-      alert(error.message);
+      console.log(error);
     }
   };
 };
@@ -67,10 +63,10 @@ export const updateSearchTerm = (term) => {
     });
   };
 };
-export const setPage = (newPage) => {
+export const setPage = (index) => {
   return {
     type: "SET_PAGE",
-    payload: newPage,
+    payload: index,
   };
 };
 
@@ -95,28 +91,21 @@ export const orderByActivity = (activity) => {
   };
 };
 
-export const createActivity = (activity) => {
+export const postActivities = (data) => {
   return async (dispatch) => {
     try {
-      const { name, difficulty, season, Countries, duration, rating, image } =
-        activity;
-      const response = await axios.post("http://localhost:3001/activities", {
-        name,
-        difficulty,
-        season,
-        Countries,
-        duration,
-        rating,
-        image,
-      });
-      alert("¡Felicidades, tu actividad ha sido creada!");
+      await axios.post(`http://localhost:3001/activities`, data);
       dispatch({
-        type: "CREATE_ACTIVITY",
-        payload: response,
+        type: "POST_ACTIVITIES",
+        payload: "Actividad creada con exito",
       });
     } catch (error) {
-      console.error("Error fetching createActivity", error);
-      alert("Falta información en algunos campos");
+      console.error("Error en postActivities:", error);
+      console.log("Detalles del error:", error.response);
+      dispatch({
+        type: "POST_ACTIVITIES",
+        payload: "La actividad ya existe",
+      });
     }
   };
 };
@@ -124,26 +113,16 @@ export const createActivity = (activity) => {
 export const getActivities = () => {
   return async (dispatch) => {
     try {
-      // Obtener la lista de actividades
-      const responseActivities = await axios.get(
-        "http://localhost:3001/activities"
-      );
-      const activities = responseActivities.data;
-
-      // Obtener la lista de países
-      const responseCountries = await axios.get(
-        "http://localhost:3001/countries"
-      );
-      const countries = responseCountries.data;
-      console.log("paises de getactivities", countries);
-
-      return dispatch({
-        type: "GET_ACTIVITIES",
-        payload: { activities, countries },
+      const response = (await axios("http://localhost:3001/activities")).data;
+      dispatch({
+        type: GET_ACTIVITIES,
+        payload: response,
       });
     } catch (error) {
-      console.error("Error fetching data", error);
-      alert(error.message);
+      dispatch({
+        type: GET_ACTIVITIES,
+        payload: "No hay actividades disponibles",
+      });
     }
   };
 };
